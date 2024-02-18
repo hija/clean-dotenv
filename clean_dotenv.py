@@ -23,7 +23,7 @@ def clean_env(path_to_env: StrPath):
 def clean_dotenv_files(path_to_root: StrPath):
     # Find possible .env files
     for env_file in glob.iglob(
-        pathname="**/*.[eE][nN][vV]", root_dir=path_to_root, recursive=True
+        pathname="**/*.env", root_dir=path_to_root, recursive=True
     ):
 
         # Clean .env files
