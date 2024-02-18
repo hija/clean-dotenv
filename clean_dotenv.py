@@ -1,4 +1,3 @@
-import glob
 import os
 import argparse
 import dotenv.main
@@ -21,12 +20,11 @@ def clean_env(path_to_env: str):
 
 def clean_dotenv_files(path_to_root: str):
     # Find possible .env files
-    for env_file in glob.iglob(
-        pathname="**/*.env", root_dir=path_to_root, recursive=True
-    ):
-
-        # Clean .env files
-        clean_env(env_file)
+    for root, _, files in os.walk(path_to_root):
+        for file in files:
+            if file.endswith(".env"):
+                # Create a cleaned .env.example file for the found .env file
+                clean_env(os.path.join(root, file))
 
 
 def main():
