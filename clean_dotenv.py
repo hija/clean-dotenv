@@ -1,15 +1,13 @@
-import glob
 import os
 import argparse
-from dotenv.main import StrPath
-from dotenv.main import DotEnv
+import dotenv.main
 
 
-def clean_env(path_to_env: StrPath):
+def clean_env(path_to_env: str):
     # Open the .env file and remove the sensitive data
     # We rely on python-dotenv to parse the file, since we do not want to write our own parser
 
-    dotenv_file = DotEnv(dotenv_path=path_to_env)
+    dotenv_file = dotenv.main.DotEnv(dotenv_path=path_to_env)
 
     # Create new filename for the .env file --> test.env becomes test.env.example
     path_to_example_file = path_to_env + ".example"
@@ -20,14 +18,13 @@ def clean_env(path_to_env: StrPath):
             print(f"{key}=", file=example_env_f)
 
 
-def clean_dotenv_files(path_to_root: StrPath):
+def clean_dotenv_files(path_to_root: str):
     # Find possible .env files
-    for env_file in glob.iglob(
-        pathname="**/*.[eE][nN][vV]", root_dir=path_to_root, recursive=True
-    ):
-
-        # Clean .env files
-        clean_env(env_file)
+    for root, _, files in os.walk(path_to_root):
+        for file in files:
+            if file.endswith(".env"):
+                # Create a cleaned .env.example file for the found .env file
+                clean_env(os.path.join(root, file))
 
 
 def main():

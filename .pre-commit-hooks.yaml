@@ -4,7 +4,4 @@
     entry: clean-dotenv
     language: python
     always_run: true
-    types: []
-    exclude_types: [file]
-    exclude: ''
     pass_filenames: false
