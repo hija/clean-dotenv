@@ -20,11 +20,11 @@ def clean_env(path_to_env: str):
 
 def clean_dotenv_files(path_to_root: str):
     # Find possible .env files
-    for root, _, files in os.walk(path_to_root):
-        for file in files:
-            if file.endswith(".env"):
+    with os.scandir(path_to_root) as it:
+        for entry in it:
+            if entry.name.endswith(".env") and entry.is_file():
                 # Create a cleaned .env.example file for the found .env file
-                clean_env(os.path.join(root, file))
+                clean_env(entry.path)
 
 
 def main():
