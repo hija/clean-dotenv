@@ -1,3 +1,4 @@
+[![build status](https://github.com/hija/clean-dotenv/actions/workflows/main.yml/badge.svg)](https://github.com/hija/clean-dotenv/actions/workflows/main.yml)
 [![PyPI version](https://badge.fury.io/py/clean-dotenv.svg)](https://badge.fury.io/py/clean-dotenv)
 
 clean-dotenv
@@ -38,7 +39,7 @@ Consult `clean-dotenv --help` for the full set of options.
 
 Common options:
 
-- `--root path`: Defines the root path in which to look for .env files
+- `--root path`: Defines the root path in which to look for .env files. This is **not recursive**
 
 ## As a pre-commit hook
 
