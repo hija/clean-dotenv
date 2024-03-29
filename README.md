@@ -20,8 +20,8 @@ An `.env` file should not be commited into a repo, since it can contain sensitiv
 However, there is one issue with this approach: If one introduces a new environment variable, they need to remember to add it to the `.env.example` file. Unfortunately, if they forget this, it will not be noticed, since the program is using the `.env` file and not the `.env.example`. This pre-commit hook tries to mitigate this problem by creating an `.env.example` file automatically (based on your `.env` file), so the example `.env` file would become the following `.env.example`:
 
 ```bash
-OPENAI_KEY=
-S3_BUCKET_NAME=
+OPENAI_KEY=""
+S3_BUCKET_NAME=""
 ```
 
 [^1]: https://www.zdnet.com/article/botnets-have-been-silently-mass-scanning-the-internet-for-unsecured-env-files/
