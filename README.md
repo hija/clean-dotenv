@@ -49,7 +49,7 @@ Sample `.pre-commit-config.yaml`
 
 ```yaml
 -   repo: https://github.com/hija/clean-dotenv
-    rev: v0.0.5
+    rev: v0.0.6
     hooks:
     -   id: clean-dotenv
 ```
