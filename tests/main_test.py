@@ -1,7 +1,9 @@
 from os import DirEntry
 from unittest.mock import MagicMock, call, mock_open, patch
 import pytest
-import clean_dotenv
+from clean_dotenv import _main as clean_dotenv
+import tempfile
+import shutil
 
 
 class DirEntry:
@@ -15,6 +17,89 @@ class DirEntry:
 
     def is_file(self):
         return self._is_file
+
+
+@pytest.mark.parametrize(
+    ("s", "expected"),
+    (
+        pytest.param("#test", "#test", id="comment-only"),
+        pytest.param(
+            "export AWS_PROFILE='test' #exporttest",
+            "export AWS_PROFILE='' #exporttest",
+            id="export",
+        ),
+        pytest.param(
+            'AWS_PROFILE="test" #double',
+            'AWS_PROFILE="" #double',
+            id="double quotes",
+        ),
+        pytest.param(
+            """
+            AWS_PROFILE="123"
+            AWS_KEY="123"
+        """,
+            """
+            AWS_PROFILE=""
+            AWS_KEY=""
+        """,
+            id="multiline",
+        ),
+        pytest.param(
+            """
+            A="123"
+            B='456'
+        """,
+            """
+            A=""
+            B=''
+        """,
+            id="mixed separator",
+        ),
+        pytest.param(
+            """# Copy and paste the credentials here.
+                #
+                # Restart running containers whenever these values are updated.
+
+                AWS_PROFILE="default"
+
+                # Alternatively, if you wish to use keys directly, uncomment the 
+                # following lines and provide the values. Comment out or remove the 
+                # AWS_PROFILE line above.
+
+                # AWS_ACCESS_KEY_ID=""
+                # AWS_SECRET_ACCESS_KEY=""
+                # AWS_SESSION_TOKEN=""
+                """,
+            """# Copy and paste the credentials here.
+                #
+                # Restart running containers whenever these values are updated.
+
+                AWS_PROFILE=""
+
+                # Alternatively, if you wish to use keys directly, uncomment the 
+                # following lines and provide the values. Comment out or remove the 
+                # AWS_PROFILE line above.
+
+                # AWS_ACCESS_KEY_ID=""
+                # AWS_SECRET_ACCESS_KEY=""
+                # AWS_SESSION_TOKEN=""
+                """,
+            id="GitHub Issue #1 Example",
+        ),
+    ),
+)
+def test_clean_function(s, expected):
+    # First we create a temp directory in which we store the .env file
+    tmpdir = tempfile.mkdtemp()
+    # We write the content into a .env
+    with open(f"{tmpdir}/.env", "w") as f:
+        print(s, end="", file=f)
+    clean_dotenv._clean_env(f"{tmpdir}/.env")
+    # We now get the cleaned file
+    with open(f"{tmpdir}/.env.example", "r") as f:
+        output = f.read()
+    shutil.rmtree(tmpdir)
+    assert output == expected
 
 
 @patch("os.scandir")
@@ -34,18 +119,6 @@ def test_find_dotenv_files(mock_scandir):
     assert list(clean_dotenv._find_dotenv_files(None)) == []
 
 
-@patch("dotenv.main.DotEnv")
-def test_clean_env_function(mock_dotenv):
-    dotenv_dict = {"KEY1": "secret_value1", "KEY2": "secret_value2"}
-    mock_dotenv.return_value.dict.return_value.items.return_value = dotenv_dict.items()
-
-    with patch("builtins.open", mock_open()) as mock_file:
-        clean_dotenv._clean_env("test.env")
-        mock_file.assert_called_with("test.env.example", "w")
-        expected_calls = [call("KEY1="), call("\n"), call("KEY2="), call("\n")]
-        mock_file.return_value.write.assert_has_calls(expected_calls)
-
-
 def test_find_dotenv_files_function():
     with patch("os.scandir") as mock_scandir:
         mock_scandir.return_value = [DirEntry("test.env")]
@@ -56,7 +129,7 @@ def test_find_dotenv_files_function():
 
 
 @patch("argparse.ArgumentParser.parse_args")
-@patch("clean_dotenv._main")
+@patch("clean_dotenv._main._main")
 def test_main(mock_main, mock_parse_args):
     mock_parse_args.return_value = MagicMock(root_path="test_rpath")
 
