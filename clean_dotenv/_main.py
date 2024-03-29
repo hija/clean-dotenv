@@ -1,7 +1,7 @@
 import os
 import argparse
 from typing import Iterator
-import _parser as DotEnvParser
+import clean_dotenv._parser as DotEnvParser
 
 
 def _clean_env(path_to_env: str):

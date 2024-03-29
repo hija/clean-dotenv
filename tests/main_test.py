@@ -1,7 +1,7 @@
 from os import DirEntry
 from unittest.mock import MagicMock, call, mock_open, patch
 import pytest
-import clean_dotenv
+from clean_dotenv import _main as clean_dotenv
 import tempfile
 import shutil
 
@@ -129,7 +129,7 @@ def test_find_dotenv_files_function():
 
 
 @patch("argparse.ArgumentParser.parse_args")
-@patch("clean_dotenv._main")
+@patch("clean_dotenv._main._main")
 def test_main(mock_main, mock_parse_args):
     mock_parse_args.return_value = MagicMock(root_path="test_rpath")
 
