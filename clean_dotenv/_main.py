@@ -1,10 +1,10 @@
 import os
 import argparse
-from typing import Iterator
+from typing import Iterator, List
 import clean_dotenv._parser as DotEnvParser
 
 
-def _clean_env(path_to_env: str):
+def _clean_env(path_to_env: str, values_to_keep: List[str] = []):
     # Open the .env file and remove the sensitive data
     # We rely on python-dotenv to parse the file, since we do not want to write our own parser
     dotenv_elements = DotEnvParser.parse_stream(open(path_to_env))
@@ -22,7 +22,11 @@ def _clean_env(path_to_env: str):
                 print(dotenv_element.export, end="", file=example_env_f)
             if dotenv_element.key:
                 print(
-                    f"{dotenv_element.key}={dotenv_element.separator}{dotenv_element.separator}",
+                    (
+                        f"{dotenv_element.key}={dotenv_element.separator}{dotenv_element.value}{dotenv_element.separator}"
+                        if dotenv_element.key in values_to_keep
+                        else f"{dotenv_element.key}={dotenv_element.separator}{dotenv_element.separator}"
+                    ),
                     end="",
                     file=example_env_f,
                 )
@@ -40,11 +44,11 @@ def _find_dotenv_files(path_to_root: str) -> Iterator[str]:
             yield entry.path
 
 
-def _main(path_to_root: str):
+def _main(path_to_root: str, values_to_keep: List[str] = []):
     # Find possible .env files
     for dotenv_file in _find_dotenv_files(path_to_root):
         # Clean dotenv file
-        _clean_env(dotenv_file)
+        _clean_env(path_to_env=dotenv_file, values_to_keep=values_to_keep)
 
 
 def main():
@@ -57,8 +61,10 @@ def main():
         help="Root path in which .env files shall be looked for",
         default=os.getcwd(),
     )
+    parser.add_argument("-k", "--keep", nargs="*", default=[])
+
     args = parser.parse_args()
-    _main(args.root_path)
+    _main(path_to_root=args.root_path, values_to_keep=args.keep)
 
 
 if __name__ == "__main__":

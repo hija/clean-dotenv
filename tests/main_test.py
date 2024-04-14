@@ -42,6 +42,18 @@ class DirEntry:
             AWS_PROFILE=""
             AWS_KEY=""
         """,
+            id="multiple",
+        ),
+        pytest.param(
+            """
+            AWS_PROFILE="123
+            34"
+            AWS_KEY="123"
+        """,
+            """
+            AWS_PROFILE=""
+            AWS_KEY=""
+        """,
             id="multiline",
         ),
         pytest.param(
@@ -84,7 +96,7 @@ class DirEntry:
                 # AWS_SECRET_ACCESS_KEY=""
                 # AWS_SESSION_TOKEN=""
                 """,
-            id="GitHub Issue #1 Example",
+            id="GitHub Issue #3 Example",
         ),
     ),
 )
@@ -95,6 +107,81 @@ def test_clean_function(s, expected):
     with open(f"{tmpdir}/.env", "w") as f:
         print(s, end="", file=f)
     clean_dotenv._clean_env(f"{tmpdir}/.env")
+    # We now get the cleaned file
+    with open(f"{tmpdir}/.env.example", "r") as f:
+        output = f.read()
+    shutil.rmtree(tmpdir)
+    assert output == expected
+
+
+@pytest.mark.parametrize(
+    ("s", "expected", "keep"),
+    (
+        pytest.param(
+            "export AWS_PROFILE='test' #exporttest",
+            "export AWS_PROFILE='test' #exporttest",
+            ["AWS_PROFILE"],
+            id="single-keep",
+        ),
+        pytest.param(
+            """
+            AWS_PROFILE="123"
+            AWS_KEY="123"
+        """,
+            """
+            AWS_PROFILE="123"
+            AWS_KEY="123"
+        """,
+            ["AWS_PROFILE", "AWS_KEY"],
+            id="multi-keep",
+        ),
+        pytest.param(
+            """
+            AWS_PROFILE="123
+            34"
+            AWS_KEY="123"
+        """,
+            """
+            AWS_PROFILE="123
+            34"
+            AWS_KEY="123"
+        """,
+            ["AWS_PROFILE", "AWS_KEY"],
+            id="multi-keep",
+        ),
+        pytest.param(
+            """
+            AWS_PROFILE="123"
+            AWS_KEY="123"
+        """,
+            """
+            AWS_PROFILE=""
+            AWS_KEY="123"
+        """,
+            ["aws_profile", "AWS_KEY"],
+            id="case-sensitive",
+        ),
+        pytest.param(
+            """
+            password=pa55w0rd
+            url=www.google.com
+        """,
+            """
+            password=
+            url=www.google.com
+        """,
+            ["url"],
+            id="GitHub Issue #5 Example",
+        ),
+    ),
+)
+def test_clean_function_with_values_to_keep(s, expected, keep):
+    # First we create a temp directory in which we store the .env file
+    tmpdir = tempfile.mkdtemp()
+    # We write the content into a .env
+    with open(f"{tmpdir}/.env", "w") as f:
+        print(s, end="", file=f)
+    clean_dotenv._clean_env(f"{tmpdir}/.env", values_to_keep=keep)
     # We now get the cleaned file
     with open(f"{tmpdir}/.env.example", "r") as f:
         output = f.read()
@@ -131,11 +218,11 @@ def test_find_dotenv_files_function():
 @patch("argparse.ArgumentParser.parse_args")
 @patch("clean_dotenv._main._main")
 def test_main(mock_main, mock_parse_args):
-    mock_parse_args.return_value = MagicMock(root_path="test_rpath")
+    mock_parse_args.return_value = MagicMock(root_path="test_rpath", keep=[])
 
     clean_dotenv.main()
 
-    mock_main.assert_called_once_with("test_rpath")
+    mock_main.assert_called_once_with(path_to_root="test_rpath", values_to_keep=[])
 
 
 def test__main():
@@ -148,11 +235,11 @@ def test__main():
     clean_dotenv._clean_env = mm_clean_env
 
     # Call main method
-    clean_dotenv._main("test_directory")
+    clean_dotenv._main(path_to_root="test_directory", values_to_keep=[])
 
     # Detection should be called once
     mm_find_dotenv.assert_called_once_with("test_directory")
 
     # The creation of new .env file should be called twice, last with "test.env"
     assert mm_clean_env.call_count == 2
-    mm_clean_env.assert_called_with("test.env")
+    mm_clean_env.assert_called_with(path_to_env="test.env", values_to_keep=[])
