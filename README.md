@@ -39,7 +39,8 @@ Consult `clean-dotenv --help` for the full set of options.
 
 Common options:
 
-- `--root path`: Defines the root path in which to look for .env files. This is **not recursive**
+- `--root_path`: Defines the root path in which to look for .env files. This is **not recursive**
+- `--keep value1 value2`: Defines which values shall be kept in the .env file. In this example, every variable except for value1 and value2 would be cleaned.
 
 ## As a pre-commit hook
 
@@ -49,7 +50,7 @@ Sample `.pre-commit-config.yaml`
 
 ```yaml
 -   repo: https://github.com/hija/clean-dotenv
-    rev: v0.0.6
+    rev: v0.0.7
     hooks:
     -   id: clean-dotenv
 ```
