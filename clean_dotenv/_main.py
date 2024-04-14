@@ -61,7 +61,13 @@ def main():
         help="Root path in which .env files shall be looked for",
         default=os.getcwd(),
     )
-    parser.add_argument("-k", "--keep", nargs="*", default=[])
+    parser.add_argument(
+        "-k",
+        "--keep",
+        nargs="*",
+        help="Variables which shall not be cleaned by clean-dotenv. Separate values by space.",
+        default=[],
+    )
 
     args = parser.parse_args()
     _main(path_to_root=args.root_path, values_to_keep=args.keep)
