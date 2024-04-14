@@ -1,0 +1,5 @@
+* v.0.0.7
+- Allow values for named keys to be kept (#5)
+
+* v0.0.6
+- Preserve comments in the produced .env.example file (#3)
