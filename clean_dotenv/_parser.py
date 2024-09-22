@@ -33,14 +33,11 @@ import codecs
 import re
 from typing import (
     IO,
-    Iterator,
-    Match,
     NamedTuple,
-    Optional,  # noqa:F401
-    Pattern,
-    Sequence,
-    Tuple,
+    Optional,
 )
+from collections.abc import Iterator, Sequence
+from re import Match, Pattern
 
 
 def make_regex(string: str, extra_flags: int = 0) -> Pattern[str]:
@@ -162,7 +159,7 @@ def parse_unquoted_value(reader: Reader) -> str:
     return re.sub(r"\s+#.*", "", part).rstrip()
 
 
-def parse_value(reader: Reader) -> Tuple[str, str]:
+def parse_value(reader: Reader) -> tuple[str, str]:
     char = reader.peek(1)
     if char == "'":
         (value,) = reader.read_regex(_single_quoted_value)
