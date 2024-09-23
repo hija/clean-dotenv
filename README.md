@@ -25,7 +25,7 @@ S3_BUCKET_NAME=""
 ```
 
 [^1]: https://www.zdnet.com/article/botnets-have-been-silently-mass-scanning-the-internet-for-unsecured-env-files/
- 
+
 ## Installation
 
 ```bash

@@ -1,22 +1,16 @@
 # This is the original python-dotenv parser with minor changes to work in clean-dotenv
 # Find the copyright and license below:
-
 # Copyright (c) 2014, Saurabh Kumar (python-dotenv), 2013, Ted Tieken (django-dotenv-rw), 2013, Jacob Kaplan-Moss (django-dotenv)
-
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met:
-
 # - Redistributions of source code must retain the above copyright notice,
 #   this list of conditions and the following disclaimer.
-
 # - Redistributions in binary form must reproduce the above copyright notice,
 #   this list of conditions and the following disclaimer in the documentation
 #   and/or other materials provided with the distribution.
-
 # - Neither the name of django-dotenv nor the names of its contributors
 #   may be used to endorse or promote products derived from this software
 #   without specific prior written permission.
-
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,35 +22,34 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 import codecs
 import re
-from typing import (
-    IO,
-    NamedTuple,
-    Optional,
-)
-from collections.abc import Iterator, Sequence
-from re import Match, Pattern
+from collections.abc import Iterator
+from collections.abc import Sequence
+from re import Match
+from re import Pattern
+from typing import IO
+from typing import NamedTuple
+from typing import Optional
 
 
 def make_regex(string: str, extra_flags: int = 0) -> Pattern[str]:
     return re.compile(string, re.UNICODE | extra_flags)
 
 
-_newline = make_regex(r"(\r\n|\n|\r)")
-_multiline_whitespace = make_regex(r"(\s*)", extra_flags=re.MULTILINE)
-_whitespace = make_regex(r"([^\S\r\n]*)")
-_export = make_regex(r"(export[^\S\r\n]+)?")
+_newline = make_regex(r'(\r\n|\n|\r)')
+_multiline_whitespace = make_regex(r'(\s*)', extra_flags=re.MULTILINE)
+_whitespace = make_regex(r'([^\S\r\n]*)')
+_export = make_regex(r'(export[^\S\r\n]+)?')
 _single_quoted_key = make_regex(r"'([^']+)'")
-_unquoted_key = make_regex(r"([^=\#\s]+)")
-_equal_sign = make_regex(r"(=[^\S\r\n]*)")
+_unquoted_key = make_regex(r'([^=\#\s]+)')
+_equal_sign = make_regex(r'(=[^\S\r\n]*)')
 _single_quoted_value = make_regex(r"'((?:\\'|[^'])*)'")
 _double_quoted_value = make_regex(r'"((?:\\"|[^"])*)"')
-_unquoted_value = make_regex(r"([^\r\n]*)")
-_comment = make_regex(r"([^\S\r\n]*#[^\r\n]*)?")
-_end_of_line = make_regex(r"[^\S\r\n]*(\r\n|\n|\r|$)")
-_rest_of_line = make_regex(r"[^\r\n]*(?:\r|\n|\r\n)?")
+_unquoted_value = make_regex(r'([^\r\n]*)')
+_comment = make_regex(r'([^\S\r\n]*#[^\r\n]*)?')
+_end_of_line = make_regex(r'[^\S\r\n]*(\r\n|\n|\r|$)')
+_rest_of_line = make_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
 _double_quote_escapes = make_regex(r"\\[\\'\"abfnrtv]")
 _single_quote_escapes = make_regex(r"\\[\\']")
 
@@ -84,10 +77,10 @@ class Position:
         self.line = line
 
     @classmethod
-    def start(cls) -> "Position":
+    def start(cls) -> 'Position':
         return cls(chars=0, line=1)
 
-    def set(self, other: "Position") -> None:
+    def set(self, other: 'Position') -> None:
         self.chars = other.chars
         self.line = other.line
 
@@ -124,28 +117,28 @@ class Reader:
     def read(self, count: int) -> str:
         result = self.string[self.position.chars : self.position.chars + count]
         if len(result) < count:
-            raise Error("read: End of string")
+            raise Error('read: End of string')
         self.position.advance(result)
         return result
 
     def read_regex(self, regex: Pattern[str]) -> Sequence[str]:
         match = regex.match(self.string, self.position.chars)
         if match is None:
-            raise Error("read_regex: Pattern not found")
+            raise Error('read_regex: Pattern not found')
         self.position.advance(self.string[match.start() : match.end()])
         return match.groups()
 
 
 def decode_escapes(regex: Pattern[str], string: str) -> str:
     def decode_match(match: Match[str]) -> str:
-        return codecs.decode(match.group(0), "unicode-escape")  # type: ignore
+        return codecs.decode(match.group(0), 'unicode-escape')  # type: ignore
 
     return regex.sub(decode_match, string)
 
 
 def parse_key(reader: Reader) -> Optional[str]:
     char = reader.peek(1)
-    if char == "#":
+    if char == '#':
         return None
     elif char == "'":
         (key,) = reader.read_regex(_single_quoted_key)
@@ -156,7 +149,7 @@ def parse_key(reader: Reader) -> Optional[str]:
 
 def parse_unquoted_value(reader: Reader) -> str:
     (part,) = reader.read_regex(_unquoted_value)
-    return re.sub(r"\s+#.*", "", part).rstrip()
+    return re.sub(r'\s+#.*', '', part).rstrip()
 
 
 def parse_value(reader: Reader) -> tuple[str, str]:
@@ -167,10 +160,10 @@ def parse_value(reader: Reader) -> tuple[str, str]:
     elif char == '"':
         (value,) = reader.read_regex(_double_quoted_value)
         return decode_escapes(_double_quote_escapes, value), '"'
-    elif char in ("", "\n", "\r"):
-        return "", ""
+    elif char in ('', '\n', '\r'):
+        return '', ''
     else:
-        return parse_unquoted_value(reader), ""
+        return parse_unquoted_value(reader), ''
 
 
 def parse_binding(reader: Reader) -> Binding:
@@ -192,7 +185,7 @@ def parse_binding(reader: Reader) -> Binding:
         (export,) = reader.read_regex(_export)
         key = parse_key(reader)
         reader.read_regex(_whitespace)
-        if reader.peek(1) == "=":
+        if reader.peek(1) == '=':
             reader.read_regex(_equal_sign)
             value, separator = parse_value(reader)
         else:
