@@ -60,14 +60,14 @@ class Original(NamedTuple):
 
 
 class Binding(NamedTuple):
-    multiline_whitespace: Optional[str]
-    export: Optional[str]
-    key: Optional[str]
-    value: Optional[str]
-    separator: Optional[str]
+    multiline_whitespace: str | None
+    export: str | None
+    key: str | None
+    value: str | None
+    separator: str | None
     original: Original
-    comment: Optional[str]
-    end_of_line: Optional[str]
+    comment: str | None
+    end_of_line: str | None
     error: bool
 
 
@@ -136,7 +136,7 @@ def decode_escapes(regex: Pattern[str], string: str) -> str:
     return regex.sub(decode_match, string)
 
 
-def parse_key(reader: Reader) -> Optional[str]:
+def parse_key(reader: Reader) -> str | None:
     char = reader.peek(1)
     if char == '#':
         return None

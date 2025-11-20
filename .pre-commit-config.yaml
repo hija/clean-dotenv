@@ -10,7 +10,7 @@ repos:
     rev: v3.16.0
     hooks:
       - id: reorder-python-imports
-        args: [--py39-plus]
+        args: [--py310-plus]
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v4.0.0
     hooks:
@@ -19,4 +19,4 @@ repos:
     rev: v3.21.0
     hooks:
       - id: pyupgrade
-        args: [--py39-plus]
+        args: [--py310-plus]
